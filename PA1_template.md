@@ -7,7 +7,8 @@ output:
 
 
 ## Loading and preprocessing the data
-```{r warning=FALSE, message=FALSE, echo=TRUE}
+
+``` r
 # Load necessary libraries
 library(dplyr)
 library(ggplot2)
@@ -20,22 +21,36 @@ activity_data$date <- as.Date(activity_data$date)
 
 # Check the structure of the dataset
 str(activity_data)
+```
 
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
+``` r
 # Check for missing values
 sum(is.na(activity_data))
 ```
 
+```
+## [1] 2304
+```
+
 ## What is mean total number of steps taken per day?
-```{r echo=TRUE}
+
+``` r
 # Calculate total steps per day
 total_steps_per_day <- activity_data %>%
   group_by(date) %>%
   summarise(total_steps = sum(steps, na.rm = TRUE))
-
 ```
 
 ## What is the average daily activity pattern?
-```{r echo=TRUE}
+
+``` r
 # Calculate average steps per interval
 average_steps_per_day <- activity_data %>%
   group_by(date) %>%
@@ -44,7 +59,8 @@ average_steps_per_day <- activity_data %>%
 
 ## Imputing missing values
 
-```{r echo=TRUE}
+
+``` r
 # Check for missing values in the dataset and look at distribution of steps
 # Use median to impute missing values
 
@@ -59,7 +75,8 @@ if (missing_steps > 0) {
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r echo=TRUE}
+
+``` r
 # Create a new column to indicate whether the day is a weekday or weekend
 activity_data_imputed <- activity_data_imputed %>%
   mutate(day_type = ifelse(wday(date) %in% c(1, 7), "Weekend", "Weekday"))
@@ -81,20 +98,25 @@ average_steps_weekend <- activity_data_imputed %>%
 After performing the calculations and imputations, we can visualize the results to better understand the activity patterns.
 
 ### Plot the average daily activity pattern
-```{r warning=FALSE, message=FALSE}
+
+``` r
 # Plot the total steps per day
 ggplot(total_steps_per_day, aes(x = date, y = total_steps)) +
   geom_line(color = "blue") +
   labs(title = "Total Steps per Day", x = "Date", y = "Total Steps") +
   theme_minimal()
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
+``` r
 #save in figures
 ggsave("figures/total_steps_per_day.png", width = 8, height = 6)
-
 ```
 
 ### Plot the average steps per interval for weekdays and weekends
-```{r warning=FALSE, message=FALSE}
+
+``` r
 # Plot the average steps per interval for weekdays and weekends
 ggplot() +
   geom_line(data = average_steps_weekday, aes(x = interval, y = average_steps), color = "steelblue") +
@@ -104,7 +126,11 @@ ggplot() +
   theme_minimal() +
   theme(legend.position = "top") +
   scale_color_manual(values = c("Weekday" = "steelblue", "Weekend" = "red"))
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
+``` r
 # Save the plot
 ggsave("figures/average_steps_per_interval.png", width = 8, height = 6)
 ```
