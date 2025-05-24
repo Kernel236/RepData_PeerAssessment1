@@ -1,8 +1,13 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: "Kernel236"
 output: 
   html_document:
     keep_md: true
+    code_folding: show
+    toc: true
+    toc_float: true
+    fig_caption: true
 ---
 
 
@@ -12,6 +17,7 @@ output:
 library(dplyr)
 library(ggplot2)
 library(lubridate)
+library(gridExtra)
 
 # Load the dataset
 activity_data <- read.csv(here::here("data", "activity.csv"))
@@ -32,14 +38,17 @@ total_steps_per_day <- activity_data %>%
   group_by(date) %>%
   summarise(total_steps = sum(steps, na.rm = TRUE))
 
+head(total_steps_per_day)
 ```
 
 ## What is the average daily activity pattern?
 ```{r echo=TRUE}
-# Calculate average steps per interval
+# Calculate average steps per day
 average_steps_per_day <- activity_data %>%
   group_by(date) %>%
   summarise(average_steps = mean(steps, na.rm = TRUE))
+
+head(average_steps_per_day)
 ```
 
 ## Imputing missing values
@@ -53,9 +62,11 @@ if (missing_steps > 0) {
   # Impute missing values with the mean of the respective interval
   activity_data_imputed <- activity_data %>%
     group_by(interval) %>%
-    mutate(steps = ifelse(is.na(steps), median(steps, na.rm = TRUE), steps)) %>%
+    mutate(steps = ifelse(is.na(steps), mean(steps, na.rm = TRUE), steps)) %>%
     ungroup()
 }
+
+sum(is.na(activity_data_imputed$steps)) # Check if there are still missing values
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -74,11 +85,40 @@ average_steps_weekend <- activity_data_imputed %>%
   filter(day_type == "Weekend") %>%
   group_by(interval) %>%
   summarise(average_steps = mean(steps, na.rm = TRUE))
+
+head(average_steps_weekday)
+head(average_steps_weekend)
 ```
 
 ## Plotting the results
 
 After performing the calculations and imputations, we can visualize the results to better understand the activity patterns.
+
+### Histogram of the total number of steps taken each day
+```{r}
+
+#impoutre missing value and repeat the plot
+activity_data_imputed <- activity_data_imputed %>%
+  group_by(date) %>%
+  summarise(total_steps = sum(steps, na.rm = TRUE))
+
+# Plot the histogram of total steps per day
+grid.arrange(
+ggplot(total_steps_per_day, aes(x = total_steps)) +
+  geom_histogram(binwidth = 1000, fill = "blue", color = "black") +
+  labs(title = "Total Steps per Day", x = "Total Steps", y = "Frequency") +
+  theme_minimal(),
+
+ggplot(activity_data_imputed, aes(x = total_steps)) +
+  geom_histogram(binwidth = 1000, fill = "steelblue", color = "black") +
+  labs(title = "Total Steps per Day imputed", x = "Total Steps", y = "Frequency") +
+  theme_minimal(),
+ncol = 2
+)
+
+```
+
+### Time series plot of the average number of steps taken
 
 ### Plot the average daily activity pattern
 ```{r warning=FALSE, message=FALSE}
@@ -108,4 +148,3 @@ ggplot() +
 # Save the plot
 ggsave("figures/average_steps_per_interval.png", width = 8, height = 6)
 ```
-
